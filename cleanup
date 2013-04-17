@@ -1,0 +1,39 @@
+.Text-cleanup                                   Mar-Runs                        
+*===============================================================================
+:D TXT_CLNP "400,I,123  010" . $$EP$$              Text cleanup                 
+:D TXT_REPG "400,I,123  020" . $$EP$$              Text cleanup with re-page    
+@010:() ldv <obs>I3=256 gto 030 .                 TXT_CLNP $$EP$$               
+@020:(<obs>) .                                    %  defined on call...          
+@030:rnm -1 lzr,-1 ,,<l>I4 .                      %	capture result              
+@    chg <lbs>I3 <obs> -1 .                       %	get min buffer size...      
+@    brk,0,F ldv <buf>S512 .                      %	brk into 256 area, make 2x b
+@    ldv <eof>A1=N,<eop>A1=N .                    %	initialise flags            
+@040:ldv <buf>=<buf>(P) .                         %	left-align the buffer       
+@050:def,P <bs>I3,<buf> if <bs> > <lbs>,(100) ;.  %	enough to work with?        
+@. __________Buffer not quite full: top it up if data remains___________________
+@    if <buf> = '' ldv <buf>='§' ;.               %	prime the buffer if empty   
+@060:inc <l> rdl,-1,<l>,090 1-255 <txt>S .        %	read a line                 
+@070:if <txt> = '' . ;ldv <eop>=N gto 080 .       %	empty line?                 
+@    if <eop> = Y,(060) ;ldv <eop>=Y gto 100 .    %	if eop, skip blank          
+@. ___________Just another line_________________________________________________
+@080:lcv,LIN1 B1T¬ <buf> '§'/<txt>'§' .           %	append to buffer, replacing 
+@    gto 040 .                                    %	more to get?                
+@. __________No more lines______________________________________________________
+@090:ldv <eof>=Y,<eop>=Y gto 100 .                %	hit eof; flush out buffer   
+@. __________Enough to work with: continue______________________________________
+@100:lcv,LIN1 B200T¬ <buf>(1-<obs>) ' '  ,<nos>I3 . %	how many spaces in a line?
+@    lcv     B<nos>T¬ <buf>(1-<obs>) ' ' <cc>I3 .   %	find last viable space  . 
+@    ldv <otl>S<obs>=<buf>(1-<cc>) .              %	prepare output line         
+@    if <otl> = '§' ldv <otl>='' ;.                                             
+@    if <otl> = '',(110) ;.                                                     
+<otl>                                                                           
+@110:inc <cc> ldv <buf>=<buf>(<cc>-0) .           %	remove fragment from buffer,
+@    ldv <buf>=<buf>(P) .                         %	pack what's left..          
+@    if <eop> = N,(050) ;.                        %	if no para, do next         
+@    if <buf> = '','§' . ;gto 100 .               %	anything left?              
+@    if <eof> = Y,(130) ;.                        %	end of file?                
+                                                                                
+@    ldv <buf>='§' gto 060 .                      %	go start reading again      
+@120:lcv,LIN1 B1T¬ <buf> '§'/' ' .                %	EOF - remove end tag        
+@    if <buf> NE '' xqt <buf> ;.                  %	flush remaining buffer      
+@130:brk return .                                 %	return cleaned-up text      
