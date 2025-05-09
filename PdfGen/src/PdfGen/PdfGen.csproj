@@ -105,6 +105,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandParser.cs" />
     <Compile Include="CoordinateMapper.cs" />
     <Compile Include="ExecContext.cs" />
     <Compile Include="Margins.cs" />

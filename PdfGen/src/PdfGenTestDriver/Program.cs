@@ -17,7 +17,7 @@ namespace PdfGenTestDriver
         static void Main(string[] args)
         {
             var output = new PdfOutput();
-            output.Background = backgroundFile;
+            // output.Background = backgroundFile;
             string[] lines = new string[]
             {
                 "Line 1",
